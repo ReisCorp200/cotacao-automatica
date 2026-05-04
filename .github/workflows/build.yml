@@ -1,0 +1,26 @@
+name: Build Windows EXE
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pyinstaller requests openpyxl
+
+      - name: Build EXE
+        run: pyinstaller --onefile --windowed --name CotacaoAutomatica cotacao_app.py
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: CotacaoAutomatica-Windows
+          path: dist/CotacaoAutomatica.exe
