@@ -215,6 +215,7 @@ COLUNAS_SAIDA = [
     "Título Encontrado", "Link para Compra", "Estoque Disponível",
     "Flag EX", "Documentos Importação",
     "Flag Q (QPF)", "Documentos Qualidade",
+    "Data Cotação",
 ]
 
 
@@ -280,7 +281,19 @@ def main():
     tk.Label(root, text="🛒 Cotação Automática", bg="#2b2b2b", fg="white",
              font=("Arial", 14, "bold")).pack(pady=(16, 2))
     tk.Label(root, text="Mercado Livre · Busca inteligente por PN, Marca e Produto",
-             bg="#2b2b2b", fg="#aaa", font=("Arial", 9)).pack(pady=(0, 12))
+             bg="#2b2b2b", fg="#aaa", font=("Arial", 9)).pack(pady=(0, 8))
+
+    # ── Seleção de data
+    frame_data = tk.Frame(root, bg="#2b2b2b")
+    frame_data.pack(fill="x", padx=24, pady=(0, 8))
+    tk.Label(frame_data, text="📅 Data de cotação:", bg="#2b2b2b", fg="#aaa",
+             font=("Arial", 9)).pack(side="left")
+    data_var = tk.StringVar(value=datetime.now().strftime("%d/%m/%Y"))
+    entry_data = tk.Entry(frame_data, textvariable=data_var, bg="#444", fg="white",
+                          font=("Arial", 10), relief="flat", width=12, justify="center")
+    entry_data.pack(side="left", padx=(8, 0))
+    tk.Label(frame_data, text="(dd/mm/aaaa)", bg="#2b2b2b", fg="#555",
+             font=("Arial", 8)).pack(side="left", padx=(6, 0))
 
     # ── Seleção de arquivo
     frame_sel = tk.Frame(root, bg="#2b2b2b")
@@ -348,6 +361,8 @@ def main():
 
         def run():
             try:
+                data_cotacao = data_var.get().strip()
+                log(f"📅 Data de cotação: {data_cotacao}")
                 log(f"📂 Lendo: {os.path.basename(arq)}")
                 rows = ler_excel(arq)
                 total = len(rows)
@@ -377,6 +392,9 @@ def main():
                 progress_var.set(100)
                 log("\n💾 Gerando Excel de resultado...")
                 pasta = os.path.dirname(arq)
+                # Adiciona data de cotação em cada resultado
+                for r in resultados:
+                    r["Data Cotação"] = data_cotacao
                 caminho_saida = gerar_excel(resultados, pasta)
                 log(f"✅ Salvo: {os.path.basename(caminho_saida)}")
 
