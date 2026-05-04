@@ -15,7 +15,7 @@ from openpyxl.styles import Font, PatternFill, Alignment
 ML_SITE = "MLB"   # Brasil
 ML_SEARCH_URL = "https://api.mercadolibre.com/sites/{site}/search"
 DOCS_EX = "LI/SECEX · RADAR/RFB · DI-DUIMP/SISCOMEX · NCM+EX Tarifário · Invoice · Packing List · BL/AWB · NF Entrada"
-DOCS_Q  = "QPF Petrobras (Qualificação de Produto e Fornecedor) · Certificado de Qualidade do Fabricante · Relatório de Inspeção · Certificado de Conformidade · Laudo de Teste · Norma Aplicável (API/ASME/ISO/NBR)"
+DOCS_Q  = "Inspeção Q Petrobras obrigatória · Plano de Inspeção e Teste (PIT) · Certificado de Qualidade do Fabricante · Relatório de Inspeção no Fornecedor · Certificado de Conformidade com Norma · Laudo de Teste/Ensaio · Norma Aplicável (API/ASME/ISO/NBR) · Coordenar inspetor aprovado pela Petrobras"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -35,8 +35,8 @@ def tem_ex(descricao: str) -> bool:
     return bool(re.search(r'\bEX\b', descricao, re.IGNORECASE))
 
 def tem_q(descricao: str) -> bool:
-    """Detecta exigência de certificado Q (QPF Petrobras) na descrição."""
-    return bool(re.search(r'\bQ\d*\b|\bQPF\b|\bcert\.?\s*Q\b|;Q\b', descricao, re.IGNORECASE))
+    """Detecta exigência de Inspeção Q Petrobras na descrição."""
+    return bool(re.search(r'\bIQ\b|\bINSP\.?\s*Q\b|;\s*Q\b|\bQ\s*-\s*INSP|inspeção\s*Q|insp\.?\s*Q', descricao, re.IGNORECASE))
 
 
 def buscar_ml(query: str, max_results: int = 5):
