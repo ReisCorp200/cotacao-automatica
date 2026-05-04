@@ -15,6 +15,7 @@ from openpyxl.styles import Font, PatternFill, Alignment
 ML_SITE = "MLB"   # Brasil
 ML_SEARCH_URL = "https://api.mercadolibre.com/sites/{site}/search"
 DOCS_EX = "LI/SECEX · RADAR/RFB · DI-DUIMP/SISCOMEX · NCM+EX Tarifário · Invoice · Packing List · BL/AWB · NF Entrada"
+DOCS_Q  = "QPF Petrobras (Qualificação de Produto e Fornecedor) · Certificado de Qualidade do Fabricante · Relatório de Inspeção · Certificado de Conformidade · Laudo de Teste · Norma Aplicável (API/ASME/ISO/NBR)"
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -32,6 +33,10 @@ def partes_descricao(descricao: str):
 
 def tem_ex(descricao: str) -> bool:
     return bool(re.search(r'\bEX\b', descricao, re.IGNORECASE))
+
+def tem_q(descricao: str) -> bool:
+    """Detecta exigência de certificado Q (QPF Petrobras) na descrição."""
+    return bool(re.search(r'\bQ\d*\b|\bQPF\b|\bcert\.?\s*Q\b|;Q\b', descricao, re.IGNORECASE))
 
 
 def buscar_ml(query: str, max_results: int = 5):
@@ -116,7 +121,9 @@ def cotar_item(row: dict, log_callback=None):
         quantidade = 1
 
     flag_ex = "SIM" if tem_ex(desc) else ""
+    flag_q = tem_q(row.get('desc', ''))
     docs_importacao = DOCS_EX if flag_ex else ""
+    docs_qualidade = DOCS_Q if flag_q else ""
 
     base = {
         "Processo": row.get("Processo", ""),
@@ -133,6 +140,8 @@ def cotar_item(row: dict, log_callback=None):
         "Estoque Disponível": "",
         "Flag EX": flag_ex,
         "Documentos Importação": docs_importacao,
+        "Flag Q (QPF)": flag_q,
+        "Documentos Qualidade": docs_qualidade,
     }
 
     # ── Sequência de buscas ───────────────────────────────────────────────────
@@ -205,6 +214,7 @@ COLUNAS_SAIDA = [
     "Preço Unit. (R$)", "Preço Total (R$)", "Fonte", "Tipo",
     "Título Encontrado", "Link para Compra", "Estoque Disponível",
     "Flag EX", "Documentos Importação",
+    "Flag Q (QPF)", "Documentos Qualidade",
 ]
 
 
@@ -246,7 +256,7 @@ def gerar_excel(resultados: list, pasta_saida: str) -> str:
         "Unidade": 10, "Preço Unit. (R$)": 16, "Preço Total (R$)": 16,
         "Fonte": 18, "Tipo": 12, "Título Encontrado": 45,
         "Link para Compra": 30, "Estoque Disponível": 14,
-        "Flag EX": 8, "Documentos Importação": 60,
+        "Flag EX": 8, "Documentos Importação": 60, "Flag Q (QPF)": 10, "Documentos Qualidade": 80,
     }
     for col_idx, col_name in enumerate(COLUNAS_SAIDA, 1):
         ws.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = larguras.get(col_name, 15)
